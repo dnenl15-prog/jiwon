@@ -21,7 +21,6 @@ TO_EMAIL = [
 
 KEYWORDS = ["보험", "신한", "GA"]
 
-MAX_ARTICLES = 10
 REQUEST_TIMEOUT = 20
 
 
@@ -83,9 +82,17 @@ def contains_keyword(text: str) -> bool:
     return False
 
 
+def normalize_title(title: str) -> str:
+    title = title.lower()
+    title = re.sub(r"[^가-힣a-z0-9 ]", "", title)
+    title = re.sub(r"\s+", " ", title).strip()
+    return title
+
+
 def filter_articles(items: list[dict]) -> list[dict]:
     filtered = []
     seen_urls = set()
+    seen_titles = set()
 
     now_utc = datetime.now(timezone.utc)
     cutoff = now_utc - timedelta(days=2)
@@ -96,7 +103,10 @@ def filter_articles(items: list[dict]) -> list[dict]:
         url = item.get("url", "")
         published_at = item.get("published_at", "")
 
-        if not url or url in seen_urls:
+        if not url:
+            continue
+
+        if url in seen_urls:
             continue
 
         combined_text = f"{title} {description}"
@@ -104,20 +114,26 @@ def filter_articles(items: list[dict]) -> list[dict]:
         if not contains_keyword(combined_text):
             continue
 
+        normalized = normalize_title(title)
+        if normalized in seen_titles:
+            continue
+
         if published_at:
             try:
                 published_dt = parsedate_to_datetime(published_at)
                 if published_dt.tzinfo is None:
                     published_dt = published_dt.replace(tzinfo=timezone.utc)
+
                 if published_dt < cutoff:
                     continue
             except Exception:
                 pass
 
         seen_urls.add(url)
+        seen_titles.add(normalized)
         filtered.append(item)
 
-    return filtered[:MAX_ARTICLES]
+    return filtered
 
 
 def get_news() -> list[dict]:
