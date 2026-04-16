@@ -2,7 +2,8 @@ name: Daily News Mail
 
 on:
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '7 22 * * *'   # 한국시간 오전 7:07
+    - cron: '7 9 * * *'    # 한국시간 오후 6:07
   workflow_dispatch:
 
 jobs:
@@ -10,16 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: 저장소 코드 가져오기
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Python 설치
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - run: pip install -r requirements.txt
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
 
-      - run: python news_mail.py
+      - name: 뉴스 메일 발송
+        run: python news_mail.py
         env:
-          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
