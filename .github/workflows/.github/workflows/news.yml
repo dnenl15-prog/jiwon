@@ -2,8 +2,8 @@ name: Daily News Mail
 
 on:
   schedule:
-    - cron: '0 22 * * *'  # 오전 7시
-    - cron: '0 8 * * *'   # 오후 5시
+    - cron: '0 22 * * *'  # 한국시간 오전 7시
+    - cron: '0 8 * * *'   # 한국시간 오후 5시
   workflow_dispatch:
 
 jobs:
@@ -17,10 +17,17 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Restore sent news cache
+        uses: actions/cache@v4
+        with:
+          path: sent_articles.json
+          key: sent-articles-${{ github.run_id }}
+          restore-keys: |
+            sent-articles-
+
       - run: pip install -r requirements.txt
 
       - run: python news_mail.py
         env:
-          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
