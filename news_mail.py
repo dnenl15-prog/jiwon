@@ -22,7 +22,7 @@ TO_EMAIL = [
 ]
 
 KEYWORDS = ["보험", "신한", "GA"]
-MAX_ARTICLES = 50
+MAX_ARTICLES = 20
 REQUEST_TIMEOUT = 20
 SENT_FILE = "sent_articles.json"
 
